@@ -1,0 +1,13 @@
+{
+  "name": "okghumo-booking-api",
+  "version": "0.1.0",
+  "description": "Prototype slot and booking API for an experience operator tool, with overbooking checks.",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/api.test.js"
+  },
+  "engines": { "node": ">=18" },
+  "license": "UNLICENSED",
+  "private": true
+}
