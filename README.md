@@ -1,11 +1,39 @@
 # OkGhumo booking API (prototype)
 
-A small working API for an operator tool. Operators list experiences, open time slots with a
-seat capacity, and accept bookings. Overbooking is refused by default. An operator can allow a
-small, explicit overbooking margin per slot if they plan for no-shows.
+**[Try the live demo](https://shaazamaan.github.io/okghumo-booking-api/)**: book seats in your browser and watch an overbooking get refused.
+
+![Animation: an operator opens a slot with 8 seats, a party of 6 is confirmed, a party of 4 is refused, a party of 2 fills the slot](docs/how-it-works.svg)
+
+## What it does
+
+An operator who runs experiences (a cruise, a trek, a food walk) needs three things from a booking tool:
+
+1. **List an experience**: what it is, where, the price and how long it runs.
+2. **Open slots**: the times it runs and how many seats each time has.
+3. **Take bookings**: accept a party if it fits, and refuse it if it does not.
+
+This API does those three things. The rule at its centre is that a slot never takes more people
+than it has seats. If 2 seats are left and a party of 4 asks, the API answers
+`409 only 2 seats left for this slot` and books nothing. An operator who plans for no-shows can
+allow a small, explicit overbooking margin per slot.
 
 Built with Node.js (18 or later) and no dependencies. Storage is in memory, so restarting the
 server clears the data. This is for demonstrating the flow, not for production.
+
+## How a booking is decided
+
+```mermaid
+flowchart LR
+    A[Booking request] --> B{Slot exists and<br/>has not started?}
+    B -- no --> X[404 or 409]
+    B -- yes --> C{Name, phone and<br/>party size valid?}
+    C -- no --> Y[400, nothing reserved]
+    C -- yes --> D{Party fits in<br/>seats left?}
+    D -- no --> Z[409 only N seats left]
+    D -- yes --> E[Reserve seats and<br/>confirm in one step]
+```
+
+The live demo page runs the same `src/store.js` that the API server uses.
 
 ## Run it
 

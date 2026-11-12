@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 400" width="880" height="400" role="img" aria-labelledby="t d" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+  <title id="t">How a slot fills up</title>
+  <desc id="d">An operator opens a slot with 8 seats. A party of 6 is confirmed. A party of 4 is refused because only 2 seats are left. A party of 2 is confirmed and the slot is full.</desc>
+  <style>
+    .p{opacity:0}
+    .p1{animation:p1 16s infinite}.p2{animation:p2 16s infinite}.p3{animation:p3 16s infinite}.p4{animation:p4 16s infinite}
+    @keyframes p1{0%,23%{opacity:1}25%,100%{opacity:0}}
+    @keyframes p2{0%,25%{opacity:0}27%,48%{opacity:1}50%,100%{opacity:0}}
+    @keyframes p3{0%,50%{opacity:0}52%,73%{opacity:1}75%,100%{opacity:0}}
+    @keyframes p4{0%,75%{opacity:0}77%,98%{opacity:1}100%{opacity:0}}
+    .seat{fill:#1c2c44;stroke:#33496b;stroke-width:2}
+    .sa{animation:sa 16s infinite}.sb{animation:sb 16s infinite}
+    @keyframes sa{0%,30%{fill:#1c2c44;stroke:#33496b}33%,97%{fill:#2fbf71;stroke:#2fbf71}100%{fill:#1c2c44;stroke:#33496b}}
+    @keyframes sb{0%,54%{fill:#1c2c44;stroke:#33496b}57%,72%{fill:#1c2c44;stroke:#ff6b6b}75%,81%{fill:#1c2c44;stroke:#33496b}84%,97%{fill:#2fbf71;stroke:#2fbf71}100%{fill:#1c2c44;stroke:#33496b}}
+    .bar{transform-origin:32px 0;animation:bar 16s linear infinite}
+    @keyframes bar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+    @media (prefers-reduced-motion:reduce){
+      .p1,.p2,.p3,.sa,.sb,.bar{animation:none}.p4{animation:none;opacity:1}
+      .sa,.sb{fill:#2fbf71;stroke:#2fbf71}
+    }
+  </style>
+  <rect width="880" height="400" rx="16" fill="#0f1b2d"/>
+  <text x="32" y="46" fill="#ffffff" font-size="20" font-weight="700">How a slot fills up</text>
+  <text x="848" y="46" fill="#8fa3bf" font-size="13" text-anchor="end">Example data</text>
+
+  <!-- left: request and response -->
+  <text x="32" y="86" fill="#8fa3bf" font-size="12" font-weight="700" letter-spacing="1.2">REQUEST</text>
+  <rect x="32" y="98" width="388" height="84" rx="10" fill="#16263d" stroke="#263a57"/>
+  <text x="32" y="216" fill="#8fa3bf" font-size="12" font-weight="700" letter-spacing="1.2">RESPONSE</text>
+  <rect x="32" y="228" width="388" height="58" rx="10" fill="#16263d" stroke="#263a57"/>
+
+  <g class="p p1">
+    <text class="mono" x="50" y="130" fill="#7fd1ff" font-size="14">POST /experiences/:id/slots</text>
+    <text class="mono" x="50" y="158" fill="#e6edf7" font-size="14">{ "capacity": 8 }</text>
+    <text class="mono" x="50" y="263" fill="#2fbf71" font-size="15" font-weight="700">201  slot opened</text>
+    <text x="32" y="336" fill="#ffffff" font-size="17" font-weight="600">1. The operator opens a slot with 8 seats.</text>
+    <text x="754" y="318" fill="#ffffff" font-size="30" font-weight="700" text-anchor="middle">8</text>
+  </g>
+  <g class="p p2">
+    <text class="mono" x="50" y="130" fill="#7fd1ff" font-size="14">POST /slots/:id/bookings</text>
+    <text class="mono" x="50" y="158" fill="#e6edf7" font-size="14">{ "partySize": 6 }</text>
+    <text class="mono" x="50" y="263" fill="#2fbf71" font-size="15" font-weight="700">201  confirmed</text>
+    <text x="32" y="336" fill="#ffffff" font-size="17" font-weight="600">2. A party of 6 books. Six seats are taken.</text>
+    <text x="754" y="318" fill="#ffffff" font-size="30" font-weight="700" text-anchor="middle">2</text>
+  </g>
+  <g class="p p3">
+    <text class="mono" x="50" y="130" fill="#7fd1ff" font-size="14">POST /slots/:id/bookings</text>
+    <text class="mono" x="50" y="158" fill="#e6edf7" font-size="14">{ "partySize": 4 }</text>
+    <text class="mono" x="50" y="263" fill="#ff6b6b" font-size="15" font-weight="700">409  only 2 seats left for this slot</text>
+    <text x="32" y="336" fill="#ffffff" font-size="17" font-weight="600">3. A party of 4 is refused. Nothing is overbooked.</text>
+    <text x="754" y="318" fill="#ff6b6b" font-size="30" font-weight="700" text-anchor="middle">2</text>
+  </g>
+  <g class="p p4">
+    <text class="mono" x="50" y="130" fill="#7fd1ff" font-size="14">POST /slots/:id/bookings</text>
+    <text class="mono" x="50" y="158" fill="#e6edf7" font-size="14">{ "partySize": 2 }</text>
+    <text class="mono" x="50" y="263" fill="#2fbf71" font-size="15" font-weight="700">201  confirmed</text>
+    <text x="32" y="336" fill="#ffffff" font-size="17" font-weight="600">4. A party of 2 fits. The slot is now full.</text>
+    <text x="754" y="318" fill="#ffffff" font-size="30" font-weight="700" text-anchor="middle">0</text>
+  </g>
+
+  <!-- right: the slot -->
+  <text x="472" y="86" fill="#8fa3bf" font-size="12" font-weight="700" letter-spacing="1.2">SLOT · SUNSET CRUISE · 17:00</text>
+  <g>
+    <rect class="seat sa" x="472" y="98"  width="82" height="82" rx="12"/>
+    <rect class="seat sa" x="566" y="98"  width="82" height="82" rx="12"/>
+    <rect class="seat sa" x="660" y="98"  width="82" height="82" rx="12"/>
+    <rect class="seat sa" x="754" y="98"  width="82" height="82" rx="12"/>
+    <rect class="seat sa" x="472" y="192" width="82" height="82" rx="12"/>
+    <rect class="seat sa" x="566" y="192" width="82" height="82" rx="12"/>
+    <rect class="seat sb" x="660" y="192" width="82" height="82" rx="12"/>
+    <rect class="seat sb" x="754" y="192" width="82" height="82" rx="12"/>
+  </g>
+  <text x="472" y="316" fill="#8fa3bf" font-size="15">Seats left</text>
+
+  <rect x="32" y="366" width="816" height="4" rx="2" fill="#1c2c44"/>
+  <rect class="bar" x="32" y="366" width="816" height="4" rx="2" fill="#7fd1ff"/>
+</svg>

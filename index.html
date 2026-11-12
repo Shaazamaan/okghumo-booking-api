@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Booking API prototype: live demo</title>
+<meta name="description" content="Book seats on a slot and watch the API refuse an overbooking. Runs the prototype's own booking code in your browser.">
+<style>
+  :root { --bg:#f4f6fa; --card:#fff; --ink:#122033; --mute:#5b6b82; --line:#dbe2ec; --accent:#0b66c3; --ok:#12824c; --ok-soft:#e3f5ea; --bad:#c22f2f; --bad-soft:#fdeaea; --seat:#e9eef5; --code:#0f1b2d; --code-ink:#e6edf7; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0b1422; --card:#13213a; --ink:#eef3fa; --mute:#9fb0c8; --line:#27395a; --accent:#6cb6ff; --ok:#4cd58b; --ok-soft:#143a2a; --bad:#ff7b7b; --bad-soft:#40191c; --seat:#1c2c47; --code:#081120; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif; }
+  main { max-width:980px; margin:0 auto; padding:28px 16px 48px; }
+  h1 { font-size:28px; line-height:1.2; margin:0 0 8px; }
+  h2 { font-size:13px; letter-spacing:.08em; text-transform:uppercase; color:var(--mute); margin:0 0 12px; }
+  p { margin:0 0 12px; }
+  .lede { color:var(--mute); max-width:62ch; }
+  .note { display:inline-block; background:var(--ok-soft); color:var(--ok); border-radius:8px; padding:6px 10px; font-size:14px; margin:4px 0 20px; }
+  .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:760px) { .grid { grid-template-columns:1fr; } h1 { font-size:23px; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; min-width:0; }
+  .seats { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+  .seat { aspect-ratio:1; border-radius:12px; background:var(--seat); border:2px solid var(--line); display:grid; place-items:center; font-weight:700; font-size:18px; color:#fff; transition:background .35s, border-color .35s, transform .35s; }
+  .seat.on { background:var(--ok); border-color:var(--ok); transform:scale(1.04); color:#fff; }
+  @media (prefers-color-scheme: dark) { .seat.on { color:#06210f; } }
+  .seat.extra { border-style:dashed; }
+  .shake { animation:shake .45s; }
+  @keyframes shake { 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+  .left { display:flex; justify-content:space-between; align-items:baseline; margin-top:14px; color:var(--mute); }
+  .left b { font-size:30px; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+  button { font:inherit; font-weight:600; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--ink); padding:10px 14px; cursor:pointer; min-height:44px; }
+  button:hover { border-color:var(--accent); }
+  button:focus-visible, input:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  @media (prefers-color-scheme: dark) { button.primary { color:#06182c; } }
+  button.small { min-height:36px; padding:6px 10px; font-size:14px; }
+  label { display:block; font-size:14px; color:var(--mute); }
+  input { font:inherit; width:100%; margin-top:4px; padding:10px; border-radius:10px; border:1px solid var(--line); background:var(--bg); color:var(--ink); min-height:44px; }
+  .form { display:grid; grid-template-columns:1fr 110px auto; gap:8px; align-items:end; }
+  @media (max-width:460px) { .form { grid-template-columns:1fr 1fr; } .form button { grid-column:1 / -1; } }
+  pre { margin:0; background:var(--code); color:var(--code-ink); border-radius:10px; padding:12px; font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; overflow-x:auto; white-space:pre-wrap; word-break:break-word; }
+  .status { display:inline-block; font-weight:700; border-radius:8px; padding:4px 10px; margin:12px 0 8px; font-size:14px; }
+  .status.ok { background:var(--ok-soft); color:var(--ok); } .status.bad { background:var(--bad-soft); color:var(--bad); }
+  ul { list-style:none; margin:0; padding:0; }
+  li { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 0; border-top:1px solid var(--line); }
+  li:first-child { border-top:0; }
+  .gone { color:var(--mute); text-decoration:line-through; }
+  .empty { color:var(--mute); }
+  footer { margin-top:20px; color:var(--mute); font-size:14px; }
+  a { color:var(--accent); }
+  @media (prefers-reduced-motion: reduce) { .seat { transition:none; } .shake { animation:none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Booking API prototype: try it</h1>
+  <p class="lede">An operator opens a slot with a fixed number of seats. Customers book. When a party does not fit, the API refuses it, so the slot is never overbooked by accident.</p>
+  <p class="note">This page runs the prototype's own booking code in your browser. Example data, nothing is saved.</p>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="h-slot">
+      <h2 id="h-slot">The slot: Backwater sunset cruise, tomorrow 17:00</h2>
+      <div class="seats" id="seats" aria-hidden="true"></div>
+      <div class="left"><span>Seats left</span><b id="left" aria-live="polite">8</b></div>
+    </section>
+
+    <section class="card" aria-labelledby="h-try">
+      <h2 id="h-try">Make a booking</h2>
+      <div class="row">
+        <button class="primary" id="story">Play the story</button>
+        <button id="reset">Start over</button>
+      </div>
+      <form class="form" id="form">
+        <label>Name<input id="name" value="Asha" maxlength="40" autocomplete="off"></label>
+        <label>Party size<input id="size" type="number" min="1" max="20" value="6" inputmode="numeric"></label>
+        <button class="primary" type="submit">Book</button>
+      </form>
+      <div id="out" aria-live="polite">
+        <span class="status ok" id="status">Ready</span>
+        <pre id="resp">Book a party, or press "Play the story".</pre>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:16px" aria-labelledby="h-list">
+    <h2 id="h-list">Bookings on this slot (the operator's list)</h2>
+    <ul id="list"></ul>
+  </section>
+
+  <footer>
+    <p>Code, tests and README: <a href="https://github.com/Shaazamaan/okghumo-booking-api">github.com/Shaazamaan/okghumo-booking-api</a>. Prototype only. Not connected to any OkGhumo system.</p>
+  </footer>
+</main>
+
+<!-- Run the API's own store module in the browser: a tiny shim stands in for Node's module system. -->
+<script>
+  var module = { exports: {} };
+  function require() { return { randomUUID: function () { return (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2)); } }; }
+</script>
+<script src="src/store.js"></script>
+<script>
+(function () {
+  "use strict";
+  var BookingStore = module.exports.BookingStore, store, exp, slot, timers = [];
+  var $ = function (id) { return document.getElementById(id); };
+
+  function init() {
+    timers.forEach(clearTimeout); timers = [];
+    store = new BookingStore();
+    exp = store.createExperience({ operatorId: "op_alleppey_01", title: "Backwater sunset cruise", location: "Alappuzha", pricePaise: 150000, durationMin: 120 });
+    var d = new Date(Date.now() + 864e5); d.setHours(17, 0, 0, 0);
+    slot = store.createSlot(exp.id, { startsAt: d.toISOString(), capacity: 8 });
+    show("ok", "201 Created", { slot: "opened", capacity: 8, seatsLeft: 8 }, "POST /experiences/:id/slots");
+    render();
+  }
+
+  function show(kind, status, body, req) {
+    $("status").className = "status " + kind; $("status").textContent = status;
+    $("resp").textContent = req + "\n\n" + JSON.stringify(body, null, 2);
+  }
+
+  function render() {
+    var view = store.listSlots(exp.id)[0], all = store.listBookings(slot.id), seats = $("seats"), i = 0;
+    seats.textContent = "";
+    all.filter(function (b) { return b.status === "confirmed"; }).forEach(function (b) {
+      for (var k = 0; k < b.partySize; k++, i++) { var s = document.createElement("div"); s.className = "seat on"; s.textContent = b.customerName.charAt(0).toUpperCase(); seats.appendChild(s); }
+    });
+    for (; i < view.capacity; i++) { var e = document.createElement("div"); e.className = "seat"; seats.appendChild(e); }
+    $("left").textContent = view.seatsLeft;
+    var list = $("list"); list.textContent = "";
+    if (!all.length) { var li0 = document.createElement("li"); li0.className = "empty"; li0.textContent = "No bookings yet."; list.appendChild(li0); }
+    all.forEach(function (b) {
+      var li = document.createElement("li"), t = document.createElement("span");
+      t.textContent = b.customerName + ", party of " + b.partySize + (b.status === "cancelled" ? " (cancelled)" : "");
+      if (b.status === "cancelled") t.className = "gone";
+      li.appendChild(t);
+      if (b.status === "confirmed") { var c = document.createElement("button"); c.className = "small"; c.textContent = "Cancel"; c.setAttribute("aria-label", "Cancel booking for " + b.customerName); c.onclick = function () { var r = store.cancel(b.id); show("ok", "200 OK", { status: r.status, seatsReleased: r.partySize }, "POST /bookings/:id/cancel"); render(); }; li.appendChild(c); }
+      list.appendChild(li);
+    });
+  }
+
+  function book(name, size) {
+    var req = 'POST /slots/:id/bookings\n{ "customerName": ' + JSON.stringify(name) + ', "partySize": ' + size + " }";
+    try {
+      var b = store.book(slot.id, { customerName: name, phone: "9800000000", partySize: size });
+      show("ok", "201 Created", { status: b.status, partySize: b.partySize, seatsLeft: store.listSlots(exp.id)[0].seatsLeft }, req);
+    } catch (err) {
+      show("bad", (err.status || 500) + (err.status === 409 ? " Conflict" : " Bad Request"), { error: err.message }, req);
+      var s = $("seats"); s.classList.remove("shake"); void s.offsetWidth; s.classList.add("shake");
+    }
+    render();
+  }
+
+  $("form").addEventListener("submit", function (e) { e.preventDefault(); book($("name").value, Number($("size").value)); });
+  $("reset").addEventListener("click", init);
+  $("story").addEventListener("click", function () {
+    init();
+    [["Asha", 6], ["Ravi", 4], ["Ravi", 2]].forEach(function (s, i) { timers.push(setTimeout(function () { $("name").value = s[0]; $("size").value = s[1]; book(s[0], s[1]); }, 900 + i * 1700)); });
+  });
+  init();
+  if (location.hash === "#play") $("story").click();
+})();
+</script>
+</body>
+</html>
